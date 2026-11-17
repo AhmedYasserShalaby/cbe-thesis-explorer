@@ -1,10 +1,13 @@
 # CBE Thesis Explorer
 
 Static research workstation for the retained study of CBE communication and
-Egyptian Banks/Real Estate sector-index forecasts. Open index.html or Website/.
-No server-side model training, live feed or application installation is needed.
+Egyptian Banks/Real Estate sector-index forecasts.
 
-The Website/ parent layout is intentional: Current files links resolve to the
+[Open the live Explorer](https://ahmedyassershalaby.github.io/cbe-thesis-explorer/)
+and choose **Start walkthrough** for a six-step presentation of the 6 March 2024
+example. The site opens in a browser without an account or installation.
+
+The Website/ parent layout is intentional: Study files links resolve to the
 report, notebook, workbook, presentation and supporting archive in this root.
 Chapter4/ supports the current notebook. No original workspace history, private
 correspondence or experiment follow-up outputs are included.
