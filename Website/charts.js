@@ -721,5 +721,120 @@
     o.series.push({name:'Paired difference',type:'scatter',symbol:pair.difference<0?'triangle':'circle',symbolSize:10.5,itemStyle:{color:pair.difference<0?p.zero_ref:p.danger,borderColor:p.canvas,borderWidth:2},data:[[pair.difference,.5]],markLine:{silent:true,symbol:'none',lineStyle:{color:p.docs_total||p.text,type:[5,4],width:1.4,opacity:0.55},label:{show:true,position:'end',distance:8,formatter:'0.000 pp',color:p.text,fontSize:10.5,fontFamily:p.mono,...pillLabel(p,p.border)},data:[{xAxis:0}]}});
     return o;
   }
-  return{palettes,base,valueAxis,timeAxis,timeline,policy,market,annual,distribution,boxes,forecasts,prediction,interval};
+  function followup(rows,metric,p,sharedMax,small=false){
+    const key=metric==='RMSE_pp'?'rmse':'mae';
+    const metricLabel=key==='rmse'?'RMSE (pp · lower is better)':'MAE (pp · lower is better)';
+    const o=base(p);
+    const zeroRow=rows.find(r=>r.id==='zero');
+    const numRow=rows.find(r=>r.id==='numeric_ctx');
+    const zv=zeroRow?.[key],nv=numRow?.[key];
+    const axisMax=sharedMax||Math.ceil(Math.max(...rows.map(r=>+r[key]||0))*1.18*4)/4||2;
+    const groupColors={
+      benchmark:p.numerical,
+      original:p.hold,
+      retrieval:p.egx30,
+      local_rag:p.banks,
+      api_rag:p.real_estate,
+      api_e2e:p.accent
+    };
+    const barColor=r=>{
+      if(r.id==='zero')return p.zero_ref;
+      if(r.id==='numeric_ctx')return p.numerical;
+      if(r.id==='luna_blind'||r.id==='luna_blend'||r.id==='luna_track_a')return p.real_estate;
+      return groupColors[r.group]||p.banks;
+    };
+    o.grid={left:small?124:152,right:small?54:68,top:58,bottom:46};
+    o.tooltip={
+      ...o.tooltip,
+      trigger:'axis',
+      axisPointer:{type:'shadow',shadowStyle:{color:p.pointerBand||'rgba(255,255,255,0.032)'}},
+      formatter:params=>{
+        const idx=params[0]?.dataIndex;
+        const r=rows[idx];
+        if(!r)return'';
+        const val=r[key];
+        const col=barColor(r);
+        const dZero=zv!=null?val-zv:null;
+        const dNum=nv!=null?val-nv:null;
+        const extra=[
+          tooltipRow(tooltipSwatch(col),key==='rmse'?'RMSE':'MAE',fmt(val,4)+' pp'),
+          tooltipRow(tooltipSwatch(p.muted),key==='rmse'?'MAE':'RMSE',fmt(key==='rmse'?r.mae:r.rmse,4)+' pp',true),
+          dZero!=null&&r.id!=='zero'?tooltipRow('<span style="display:inline-block;width:8px"></span>','vs Zero (0%)',sgn(dZero,4)+' pp',true):'',
+          dNum!=null&&r.id!=='numeric_ctx'?tooltipRow('<span style="display:inline-block;width:8px"></span>','vs Numbers only',sgn(dNum,4)+' pp',true):'',
+          r.brier!=null?tooltipRow('<span style="display:inline-block;width:8px"></span>','Direction Brier',fmt(r.brier,3),true):''
+        ].filter(Boolean).join('');
+        return tooltipHeader(r.label,r.groupLabel)+extra+`<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(128,128,128,0.2);font-size:11px;opacity:0.82">${esc(r.base)} · ${esc(r.note)}</div>`;
+      }
+    };
+    o.xAxis=valueAxis(p,metricLabel,{nameLocation:'middle',nameGap:30,min:0,max:axisMax});
+    o.yAxis={
+      type:'category',
+      inverse:true,
+      data:rows.map(r=>small?r.shortLabel:r.shortLabel),
+      axisLine:{show:false},
+      axisTick:{show:false},
+      axisLabel:{
+        fontSize:small?10.5:11.5,
+        color:p.text,
+        fontWeight:500,
+        width:small?116:144,
+        overflow:'truncate'
+      }
+    };
+    const markData=[];
+    const xAlign=v=>{const frac=axisMax?v/axisMax:.5;return frac<0.18?'left':frac>0.82?'right':'center';};
+    if(zv!=null){
+      markData.push({
+        name:'Zero (0%)',
+        xAxis:zv,
+        lineStyle:{color:p.zero_ref,type:[5,4],width:1.6},
+        label:{show:true,position:'start',distance:30,align:xAlign(zv),formatter:'Zero · '+fmt(zv,3),color:p.zero_ref,fontWeight:600,fontSize:10.5,fontFamily:p.mono,...pillLabel(p,p.zero_ref)}
+      });
+    }
+    if(nv!=null){
+      const close=zv!=null&&Math.abs(nv-zv)<axisMax*0.14;
+      markData.push({
+        name:'Numbers only',
+        xAxis:nv,
+        lineStyle:{color:p.mean_ref,type:[2,3],width:1.4},
+        label:{show:true,position:'start',distance:close?6:6,align:close?(nv>=zv?'left':'right'):xAlign(nv),formatter:'Num · '+fmt(nv,3),color:p.mean_ref,fontWeight:600,fontSize:10.5,fontFamily:p.mono,...pillLabel(p,p.mean_ref)}
+      });
+    }
+    o.series=[{
+      name:'Follow-up error',
+      type:'bar',
+      barMaxWidth:14,
+      showBackground:true,
+      backgroundStyle:{color:p.barTrack||'rgba(255,255,255,0.025)',borderRadius:[0,5,5,0]},
+      label:{
+        show:true,
+        position:'right',
+        distance:7,
+        fontSize:11,
+        fontFamily:p.mono,
+        fontWeight:500,
+        color:p.text,
+        textBorderColor:p.canvas,
+        textBorderWidth:3,
+        formatter:item=>fmt(item.value,3)
+      },
+      data:rows.map(r=>{
+        const c=barColor(r);
+        const beatsZero=zv!=null&&r[key]<zv&&r.id!=='zero';
+        return{
+          value:r[key],
+          itemStyle:{
+            color:horizGrad(c,r.group==='original'?'3D':'66',beatsZero?'FF':'E8'),
+            borderColor:beatsZero?p.zero_ref+'AA':c+'66',
+            borderWidth:beatsZero?1.1:0.6,
+            borderRadius:[0,5,5,0]
+          },
+          label:{color:beatsZero?p.zero_ref:(r.group==='benchmark'?p.text:p.muted),fontWeight:beatsZero?650:500}
+        };
+      }),
+      markLine:{silent:true,symbol:'none',data:markData}
+    }];
+    return o;
+  }
+  return{palettes,base,valueAxis,timeAxis,timeline,policy,market,annual,distribution,boxes,forecasts,prediction,interval,followup};
 });

@@ -44,6 +44,40 @@
       return{refs,pairs,actual};
     }
 
+    function predecisionBlock(d){
+      const pre=window.CBEFollowup?.predecision?.[d.id];
+      if(!pre)return'';
+      const exp=pre.expectation;
+      const fmtBps=v=>v===0?'Hold (0 bps)':`${signed(v,0)} bps`;
+      let expLine='<p class="tiny-note" style="margin:0">No pre-meeting rate poll established (unscheduled / special meeting).</p>';
+      if(exp){
+        const hasVal=exp.expectedBps!=null;
+        const badge=pre.confirmedMedian&&pre.surpriseBps!=null
+          ?(pre.surpriseBps===0
+            ?'<span class="pre-pill pre-pill-match">Matched poll · 0 bps</span>'
+            :`<span class="pre-pill pre-pill-surprise">Surprise · ${signed(pre.surpriseBps,0)} bps</span>`)
+          :`<span class="pre-pill pre-pill-neutral">${esc(exp.kindLabel)}</span>`;
+        const head=hasVal
+          ?`<div class="pre-value-row"><strong class="numeric">${esc(fmtBps(exp.expectedBps))}</strong>${exp.respondents?`<span class="tiny-note">n = ${esc(exp.respondents)}</span>`:''}${badge}</div>`
+          :`<div class="pre-value-row">${badge}</div>`;
+        const link=exp.url?`<a class="pre-source-link" href="${esc(exp.url)}" target="_blank" rel="noopener">Pre-meeting source · ${date(exp.date)} ↗</a>`:'';
+        expLine=`${head}<p class="pre-note">${esc(exp.note)}</p>${link}`;
+      }
+      const fxHtml=pre.fxSources?.length
+        ?`<div class="pre-subblock"><span class="pre-sublabel">Dated FX context (${pre.fxSources.length})</span><ul class="pre-fx-list">${pre.fxSources.map(fx=>`<li>${fx.url?`<a href="${esc(fx.url)}" target="_blank" rel="noopener">${date(fx.date)} · ${esc(fx.source)} ↗</a>`:`<span>${date(fx.date)} · ${esc(fx.source)}</span>`}<span class="pre-fx-note">${esc(fx.note)}</span></li>`).join('')}</ul></div>`
+        :'';
+      const repeatHtml=pre.repeatedGuidance
+        ?`<div class="pre-subblock"><span class="pre-pill pre-pill-neutral">Repeated prior guidance wording</span>${pre.repeatedQuote?`<p class="pre-quote">“${esc(pre.repeatedQuote)}”</p>`:''}</div>`
+        :'';
+      return`<div class="aside-section aside-predecision">
+        <div class="aside-section-head">
+          <h3 class="aside-heading">Pre-meeting polls &amp; FX</h3>
+          <span class="pre-audit-tag">Follow-up audit</span>
+        </div>
+        ${expLine}${fxHtml}${repeatHtml}
+      </div>`;
+    }
+
     function evidenceAside(d){
       const{r,a,b,predictions}=evidence(d),sampleLabel=C.CASES[ctx.state().sample];
       const banksData=pairedForecastRows(predictions,'banks'),reData=pairedForecastRows(predictions,'real_estate');
@@ -56,6 +90,7 @@
             <div><small>Observed change</small><strong class="numeric">${C.numeric(r?.bps)?signed(r.bps,0)+' bps':'—'}</strong></div>
           </div>
         </div>
+        ${predecisionBlock(d)}
         <div class="aside-section">
           <div class="aside-section-head">
             <h3 class="aside-heading">2. Market closes &amp; returns</h3>
