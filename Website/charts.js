@@ -731,6 +731,7 @@
     const axisMax=sharedMax||Math.ceil(Math.max(...rows.map(r=>+r[key]||0))*1.18*4)/4||2;
     const groupColors={
       benchmark:p.numerical,
+      tuned_numeric:p.docs_total,
       original:p.hold,
       retrieval:p.egx30,
       local_rag:p.banks,
