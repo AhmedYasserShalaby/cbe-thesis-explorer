@@ -9,7 +9,7 @@ Static research workstation for the study of Central Bank of Egypt (CBE) communi
 - `Thesis_Ahmed_Yasser.pdf` — Full 68-page thesis report (with follow-up extensions & 21 Nov audit)
 - `Thesis_Presentation.pdf` — 8-slide presentation summary
 - `Thesis_Data.xlsx` — Master 6-tab dataset workbook (`Events`, `Returns`, `Statements`, `Prices`, `Results`, `Predictions`)
-- `Replication_Code.zip` — Clean `thesis_kit` Python package and executed `Thesis.ipynb` (runs directly on `Thesis_Data.xlsx`)
+- `Replication_Code.zip` — Python package and executed notebook. Extract it beside `Thesis_Data.xlsx` to reproduce the saved forecast checks.
 
 Original CBE press-release PDFs (`Website/documents/`) open inline inside the Statement Reader.
 

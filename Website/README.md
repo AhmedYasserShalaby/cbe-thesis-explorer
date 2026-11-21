@@ -3,40 +3,42 @@
 Open **index.html** in a browser, or double-click **Open_Explorer.command** on
 macOS. The complete Website folder contains the data, PDFs, scripts, chart
 library and fonts. No installation, account or third-party connection is needed.
-Keep Website beside the current report, notebook, workbook and presentation so
-**Study files** links work when the handover folder is moved.
+Keep the whole site folder together when moving the Explorer. **Study files**
+opens the thesis PDF, presentation PDF, data workbook and replication ZIP.
+The ZIP contains the notebook and Python package.
 
 ## Six workspaces
 
 - **Overview** answers the study question, compares the benchmarks across both
   sectors and saved evaluations, and offers direct access to the worked example.
-- **Walkthrough** follows the 6 March 2024 announcement through six steps. It
-  shows where the assumed forecast time falls in the close-to-close return
-  window, then compares the saved forecasts and benchmarks.
-- **Policy & statements** has one search for dates and wording. Open a result
-  to read it, compare wording, or view the original PDF. The **Announcement
-  records** and **Rate history** tabs show sortable records and signed actions.
-- **Markets** covers index prices, daily returns, and first-session outcomes.
+- **Walkthrough** introduces the full study in nine steps, including a worked
+  return-window example and comparisons with the saved benchmarks. Use the
+  step picker, arrow keys, or keys 1–9.
+- **Central bank statements** searches dates and wording. Open a result to read
+  the statement, compare wording, view the original PDF, or check available
+  pre-meeting poll and FX sources. **Announcement records** and **Rate history**
+  show sortable records and signed actions.
+- **Stock market returns** covers index prices, daily returns, and first-session outcomes.
   **Policy and market timeline** links deposit rates and prices to a meeting.
 - **Forecast results** opens on the saved 119-meeting evaluation and also offers
-  the 36-meeting modern evaluation. Use **Benchmarks**, **What text changed**,
-  and **Forecasts by meeting** for scores, paired differences and individual
-  predictions. **Filtered meetings** applies the current date and policy filters.
+  the 36-meeting modern evaluation. **Model scores**, **With vs. without text**,
+  and **By meeting** show scores, paired differences and individual predictions.
+  **LLMs & RAG** covers the exploratory November comparisons. **Filtered meetings**
+  applies the current date and policy filters.
 - **Data & methods** shows how the matched meetings fed the two overlapping
   evaluations. It includes filtered coverage, seven notebook tables, definitions,
-  and study files.
+  the 17 December 2026 prospective protocol and study files.
 
 ## Search and view links
 
 Use **Search Explorer** or `Ctrl+K` / `⌘K` to find a view, meeting date, exact
 phrase, or bundled file. Search covers the retained statement archive.
-**Policy & statements** searches within the dates and filters you select.
+**Central bank statements** searches within the dates and filters you select.
 Use the arrow keys and Enter in the search dialog.
 
 **View link** keeps the section and research filters in the address. On a
 server it provides a complete link. For offline copies, append the fragment
-to the Explorer address. **Download settings** keeps chart zoom and table
-preferences for the saved-view import.
+to the Explorer address.
 
 ## Period, filters and chart windows
 
@@ -75,10 +77,9 @@ or Home/End to inspect exact values (including benchmark reference scores, 95%
 paired intervals and five-number boxplot summaries). Enter opens a linked
 announcement or selects a model where relevant. Source tables provide a numerical
 alternative. Mobile navigation has a focus-contained drawer and Escape/Close
-controls. Light (default) and dark themes (`light` / `dark`) and
-reduced motion are supported.
+controls. The Explorer uses a dark palette and respects reduced motion.
 
-## Tables, saved views and exports
+## Tables and exports
 
 Sort a column heading, choose a column preset or Columns, and search records.
 Daily tables add instrument, eligibility and return-value filters. Select rows
@@ -86,20 +87,10 @@ with checkboxes. Export rows includes all matching pages, or the explicitly
 selected rows when selection is active. Original numerical precision, text,
 missing values and source flags are retained; screen values are rounded.
 
-Save a useful view in this browser. **Saved views → Export settings** (or
-**Export → Portable view settings**) creates a JSON file for another local copy;
-**Saved views → Import settings** restores it. Settings contain
-filters/presentation choices, not the dataset. Storage failure has an in-session
-fallback. Browser-local saved views may differ between file locations or
-browsers; use JSON to move them reliably.
-
 Switch between **Chart** and **Data** on the chart card. The data view shows
 sortable source rows, source notes and a full-precision CSV. Chart actions
-offer expansion, SVG, PNG and metadata.
-SVG/PNG exports include series legends where needed, period, units, source and
-interpretation notes. A zoomed chart exports its visible date window; the global
-Export action uses the active research selection or saved evaluation. Table search/selection is local
-to table exports. Current workspace print styles retain selection/source context.
+offer expansion and PNG export. Chart downloads use the current chart scope.
+Table search and selection apply to table exports.
 
 ## Definitions and retained limits
 
