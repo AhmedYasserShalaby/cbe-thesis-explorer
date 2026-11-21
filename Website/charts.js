@@ -802,7 +802,7 @@
       });
     }
     o.series=[{
-      name:'Follow-up error',
+      name:'Model error',
       type:'bar',
       barMaxWidth:14,
       showBackground:true,

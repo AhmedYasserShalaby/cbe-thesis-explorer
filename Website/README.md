@@ -1,4 +1,4 @@
-# CBE Thesis Explorer — research workstation
+# CBE Thesis Explorer: research workstation
 
 Open **index.html** in a browser, or double-click **Open_Explorer.command** on
 macOS. The complete Website folder contains the data, PDFs, scripts, chart
@@ -23,7 +23,8 @@ The ZIP contains the notebook and Python package.
 - **Forecast results** opens on the saved 119-meeting evaluation and also offers
   the 36-meeting modern evaluation. **Model scores**, **With vs. without text**,
   and **By meeting** show scores, paired differences and individual predictions.
-  **LLMs & RAG** covers the exploratory November comparisons. **Filtered meetings**
+  **LLMs & RAG** compares tuned numerical models, baseline Word2Vec, retrieval,
+  local LLMs, and GPT-6 Luna. **Filtered meetings**
   applies the current date and policy filters.
 - **Data & methods** shows how the matched meetings fed the two overlapping
   evaluations. It includes filtered coverage, seven notebook tables, definitions,
