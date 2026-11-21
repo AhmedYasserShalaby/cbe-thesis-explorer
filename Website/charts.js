@@ -510,22 +510,29 @@
     let metric,p,sharedMax,small=false;
     if(typeof arg2==='string'){metric=arg2;sharedMax=arg3;p=arg4;small=!!arg5;}
     else{metric=arg2?.metric||'MAE_pp';p=arg3;sharedMax=arg4;small=!!arg5;}
-    const direction=metric.includes('direction'),mult=direction?100:1,families=['ridge','elastic_net','rbf_svr','random_forest'],labels=['Ridge','Elastic Net','RBF SVR','Random Forest'],o=base(p),get=(f,v)=>rows.find(r=>r.family===f&&r.variant===v),zero=get('zero_return','reference'),mean=get('historical_mean','reference');
+    const direction=metric.includes('direction'),mult=direction?100:1,families=['ridge','elastic_net','rbf_svr','random_forest'],baseLabels=['Ridge','Elastic Net','RBF SVR','Random Forest'],o=base(p),get=(f,v)=>rows.find(r=>r.family===f&&r.variant===v),zero=get('zero_return','reference'),mean=get('historical_mean','reference');
+    const tunedRows=direction?[]:rows.filter(r=>r.variant==='tuned_numeric'&&r[metric]!=null);
+    const hasTuned=tunedRows.length>0;
+    const labels=[...baseLabels,...tunedRows.map(r=>r.familyLabel||r.family)];
+    const zv=(!direction&&zero&&zero[metric]!=null&&zero[metric]!=='')?+zero[metric]*mult:null;
     const axisMax=direction?100:sharedMax;
-    o.grid={left:small?94:108,right:small?56:76,top:direction?34:64,bottom:48};
+    o.grid={left:small?108:124,right:small?56:76,top:direction?34:64,bottom:48};
     o.tooltip={
       ...o.tooltip,
       axisPointer:{type:'shadow',shadowStyle:{color:p.pointerBand||'rgba(255,255,255,0.032)'}}
     };
+    if(hasTuned)o.axisPointer={link:[{yAxisIndex:'all'}]};
     o.xAxis=valueAxis(p,direction?'Accuracy (%)':'Error (pp · lower is better)',{nameLocation:'middle',nameGap:30,min:0,max:axisMax});
-    o.yAxis={type:'category',inverse:true,data:labels,axisLine:{show:false},axisTick:{show:false},axisLabel:{fontSize:12,color:p.text,fontWeight:500}};
+    const yAxisBase={type:'category',inverse:true,data:labels,axisLine:{show:false},axisTick:{show:false},axisLabel:{fontSize:small?11:12,color:p.text,fontWeight:500}};
+    o.yAxis=hasTuned?[yAxisBase,{type:'category',inverse:true,data:labels,show:false}]:yAxisBase;
     o.series=['numerical','text_added'].map((v,i)=>{
       const col=i?p.text_added:p.numerical;
       return{
         name:i?'With statement text':'Numbers only',
         type:'bar',
-        barMaxWidth:13,
-        barGap:'26%',
+        yAxisIndex:0,
+        barMaxWidth:hasTuned?11:13,
+        barGap:'24%',
         showBackground:true,
         backgroundStyle:{color:p.barTrack||'rgba(255,255,255,0.025)',borderRadius:[0,5,5,0]},
         itemStyle:{
@@ -536,14 +543,42 @@
         },
         emphasis:{focus:'series',itemStyle:{color:horizGrad(col,i?'99':'78','FF')}},
         blur:{itemStyle:{opacity:0.24}},
-        label:{show:true,position:'right',distance:7,color:i?p.text:p.muted,fontSize:11,fontFamily:p.mono,fontWeight:i?600:500,formatter:r=>r.value==null?'—':fmt(r.value,direction?1:3)+(direction?'%':'')},
-        data:families.map(f=>({value:get(f,v)?.[metric]==null?null:+get(f,v)[metric]*mult,family:f}))
+        label:{show:true,position:'right',distance:7,color:i?p.text:p.muted,fontSize:11,fontFamily:p.mono,fontWeight:i?600:500,textBorderColor:p.canvas,textBorderWidth:3,formatter:r=>r.value==null?'':fmt(r.value,direction?1:3)+(direction?'%':'')},
+        data:[...families.map(f=>({value:get(f,v)?.[metric]==null?null:+get(f,v)[metric]*mult,family:f})),...tunedRows.map(()=>null)]
       };
     });
+    if(hasTuned){
+      const tCol=p.docs_total;
+      o.series.push({
+        name:'Tuned numeric',
+        type:'bar',
+        yAxisIndex:1,
+        barMaxWidth:14,
+        showBackground:true,
+        backgroundStyle:{color:p.barTrack||'rgba(255,255,255,0.025)',borderRadius:[0,5,5,0]},
+        emphasis:{focus:'series'},
+        blur:{itemStyle:{opacity:0.24}},
+        label:{show:true,position:'right',distance:7,fontSize:11,fontFamily:p.mono,textBorderColor:p.canvas,textBorderWidth:3,formatter:r=>r.value==null?'':fmt(r.value,3)},
+        data:[...families.map(()=>null),...tunedRows.map(r=>{
+          const val=+r[metric]*mult;
+          const beatsZero=zv!=null&&val<zv;
+          return{
+            value:val,
+            tunedNote:r.note||'',
+            itemStyle:{
+              color:horizGrad(tCol,'66',beatsZero?'FF':'E8'),
+              borderColor:beatsZero?p.zero_ref+'AA':tCol+'66',
+              borderWidth:beatsZero?1.15:0.6,
+              borderRadius:[0,5,5,0]
+            },
+            label:{color:beatsZero?p.zero_ref:p.text,fontWeight:beatsZero?650:500}
+          };
+        })]
+      });
+    }
     const markData=[];
     const xAlign=v=>{const frac=axisMax?v/axisMax:.5;return frac<0.18?'left':frac>0.82?'right':'center';};
-    if(!direction&&zero&&zero[metric]!=null&&zero[metric]!==''){
-      const zv=+zero[metric]*mult;
+    if(!direction&&zv!=null){
       markData.push({name:'Zero return reference',xAxis:zv,lineStyle:{color:p.zero_ref||p.reference,type:[5,4],width:1.6},label:{show:true,position:'start',distance:32,align:xAlign(zv),formatter:'Zero · '+fmt(zv,3)+' pp',color:p.zero_ref||p.reference,fontWeight:600,fontSize:10.5,fontFamily:p.mono,...pillLabel(p,p.zero_ref||p.reference)}});
     }
     if(!direction&&mean&&mean[metric]!=null&&mean[metric]!==''){
@@ -552,8 +587,8 @@
     }
     if(direction){
       if(zero&&zero[metric]!=null&&zero[metric]!==''){
-        const zv=+zero[metric]*mult;
-        markData.push({name:'Zero return reference',xAxis:zv,lineStyle:{color:p.zero_ref||p.reference,type:[5,4],width:1.6},label:{show:false}});
+        const dZv=+zero[metric]*mult;
+        markData.push({name:'Zero return reference',xAxis:dZv,lineStyle:{color:p.zero_ref||p.reference,type:[5,4],width:1.6},label:{show:false}});
       }
       if(mean&&mean[metric]!=null&&mean[metric]!==''){
         const mv=+mean[metric]*mult;
@@ -562,12 +597,25 @@
     }
     o.series[0].markLine={silent:true,symbol:'none',data:markData};
     o.tooltip.formatter=params=>{
+      const idx=params[0]?.dataIndex;
       const g=params[0]?.name;
-      const numVal=params[0]?.value,txtVal=params[1]?.value;
-      const diff=(numVal!=null&&txtVal!=null)?txtVal-numVal:null;
-      const rowsHtml=params.map((r,idx)=>tooltipRow(tooltipSwatch(idx?p.text_added:p.numerical),r.seriesName,fmt(r.value,direction?1:3)+(direction?'%':' pp'))).join('');
-      const diffRow=diff!=null?tooltipRow('<span style="display:inline-block;width:8px"></span>','Text − Numbers',sgn(diff,direction?1:3)+(direction?'%':' pp'),true):'';
       const refFooter=(zero&&zero[metric]!=null)?`<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(128,128,128,0.2);font-size:11px;font-family:var(--font-mono,ui-monospace,monospace);display:flex;justify-content:space-between;gap:12px"><span style="color:${p.zero_ref}">Zero ${fmt(+zero[metric]*mult,direction?1:3)}${direction?'%':' pp'}</span><span style="color:${p.mean_ref}">Mean ${mean&&mean[metric]!=null?fmt(+mean[metric]*mult,direction?1:3)+(direction?'%':' pp'):'—'}</span></div>`:'';
+      if(hasTuned&&idx>=families.length){
+        const tr=tunedRows[idx-families.length];
+        if(!tr)return'';
+        const val=+tr[metric]*mult;
+        const dZero=zv!=null?val-zv:null;
+        const mainRow=tooltipRow(tooltipSwatch(p.docs_total),'Tuned numeric',fmt(val,3)+' pp');
+        const diffZero=dZero!=null?tooltipRow('<span style="display:inline-block;width:8px"></span>','vs Zero (0%)',sgn(dZero,3)+' pp',true):'';
+        const noteHtml=tr.note?`<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(128,128,128,0.2);font-size:11px;opacity:0.82">${esc(tr.note)}</div>`:'';
+        return tooltipHeader(g,'Tuned numeric')+mainRow+diffZero+refFooter+noteHtml;
+      }
+      const numItem=params.find(x=>x.seriesName==='Numbers only');
+      const txtItem=params.find(x=>x.seriesName==='With statement text');
+      const numVal=numItem?.value,txtVal=txtItem?.value;
+      const diff=(numVal!=null&&txtVal!=null)?txtVal-numVal:null;
+      const rowsHtml=[numItem,txtItem].filter(Boolean).map((r,i)=>tooltipRow(tooltipSwatch(i?p.text_added:p.numerical),r.seriesName,fmt(r.value,direction?1:3)+(direction?'%':' pp'))).join('');
+      const diffRow=diff!=null?tooltipRow('<span style="display:inline-block;width:8px"></span>','Text − Numbers',sgn(diff,direction?1:3)+(direction?'%':' pp'),true):'';
       return tooltipHeader(g)+rowsHtml+diffRow+refFooter;
     };
     return o;
@@ -744,7 +792,7 @@
       if(r.id==='luna_blind'||r.id==='luna_blend'||r.id==='luna_track_a')return p.real_estate;
       return groupColors[r.group]||p.banks;
     };
-    o.grid={left:small?124:152,right:small?54:68,top:58,bottom:46};
+    o.grid={left:small?104:120,right:small?54:68,top:58,bottom:46};
     o.tooltip={
       ...o.tooltip,
       trigger:'axis',
@@ -775,10 +823,10 @@
       axisLine:{show:false},
       axisTick:{show:false},
       axisLabel:{
-        fontSize:small?10.5:11.5,
+        fontSize:small?11:12,
         color:p.text,
         fontWeight:500,
-        width:small?116:144,
+        width:small?98:114,
         overflow:'truncate'
       }
     };
