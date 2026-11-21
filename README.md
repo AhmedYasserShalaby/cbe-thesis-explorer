@@ -6,7 +6,7 @@ Static research workstation for the study of Central Bank of Egypt (CBE) communi
 
 ## Study Downloads (4 Files)
 
-- `Thesis_Ahmed_Yasser.pdf` — Full 55-page thesis report
+- `Thesis_Ahmed_Yasser.pdf` — Full 68-page thesis report (with follow-up extensions & 21 Nov audit)
 - `Thesis_Presentation.pdf` — 8-slide presentation summary
 - `Thesis_Data.xlsx` — Master 6-tab dataset workbook (`Events`, `Returns`, `Statements`, `Prices`, `Results`, `Predictions`)
 - `Replication_Code.zip` — Clean `thesis_kit` Python package and executed `Thesis.ipynb` (runs directly on `Thesis_Data.xlsx`)
